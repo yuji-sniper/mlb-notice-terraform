@@ -33,7 +33,7 @@ resource "aws_cloudwatch_event_rule" "this" {
 }
 
 # ターゲット
-data "aws_iam_policy_document" "event_target_assume_role" {
+data "aws_iam_policy_document" "event_assume_role" {
   statement {
     effect = "Allow"
     principals {
@@ -44,12 +44,12 @@ data "aws_iam_policy_document" "event_target_assume_role" {
   }
 }
 
-resource "aws_iam_role" "event_target" {
-  name               = "${var.name}-event-target"
-  assume_role_policy = data.aws_iam_policy_document.event_target_assume_role.json
+resource "aws_iam_role" "event_invoke" {
+  name               = "${var.name}-event"
+  assume_role_policy = data.aws_iam_policy_document.event_assume_role.json
 }
 
-data "aws_iam_policy_document" "event_target_policy" {
+data "aws_iam_policy_document" "event_invoke_policy" {
   statement {
     effect    = "Allow"
     actions   = ["events:InvokeApiDestination"]
@@ -57,18 +57,18 @@ data "aws_iam_policy_document" "event_target_policy" {
   }
 }
 
-resource "aws_iam_policy" "event_target" {
-  name   = "${var.name}-event-target"
-  policy = data.aws_iam_policy_document.event_target_policy.json
+resource "aws_iam_policy" "event_invoke" {
+  name   = "${var.name}-event"
+  policy = data.aws_iam_policy_document.event_invoke_policy.json
 }
 
-resource "aws_iam_role_policy_attachment" "event_target" {
-  role       = aws_iam_role.event_target.name
-  policy_arn = aws_iam_policy.event_target.arn
+resource "aws_iam_role_policy_attachment" "event_invoke" {
+  role       = aws_iam_role.event_invoke.name
+  policy_arn = aws_iam_policy.event_invoke.arn
 }
 
 resource "aws_cloudwatch_event_target" "this" {
   rule     = aws_cloudwatch_event_rule.this.name
   arn      = aws_cloudwatch_event_api_destination.this.arn
-  role_arn = aws_iam_role.event_target.arn
+  role_arn = aws_iam_role.event_invoke.arn
 }
