@@ -45,20 +45,20 @@ data "aws_iam_policy_document" "event_target_assume_role" {
 }
 
 resource "aws_iam_role" "event_target" {
-  name = "${var.name}-event-target"
+  name               = "${var.name}-event-target"
   assume_role_policy = data.aws_iam_policy_document.event_target_assume_role.json
 }
 
 data "aws_iam_policy_document" "event_target_policy" {
   statement {
-    effect = "Allow"
-    actions = ["events:InvokeApiDestination"]
+    effect    = "Allow"
+    actions   = ["events:InvokeApiDestination"]
     resources = [aws_cloudwatch_event_api_destination.this.arn]
   }
 }
 
 resource "aws_iam_policy" "event_target" {
-  name = "${var.name}-event-target"
+  name   = "${var.name}-event-target"
   policy = data.aws_iam_policy_document.event_target_policy.json
 }
 
@@ -68,7 +68,7 @@ resource "aws_iam_role_policy_attachment" "event_target" {
 }
 
 resource "aws_cloudwatch_event_target" "this" {
-  rule = aws_cloudwatch_event_rule.this.name
-  arn  = aws_cloudwatch_event_api_destination.this.arn
+  rule     = aws_cloudwatch_event_rule.this.name
+  arn      = aws_cloudwatch_event_api_destination.this.arn
   role_arn = aws_iam_role.event_target.arn
 }
